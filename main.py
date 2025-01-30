@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, request, send_file
+from flask import Flask, redirect, request, send_file, Response
 from google.cloud import datastore, storage
 import time
 
@@ -19,6 +19,7 @@ BUCKET_NAME = 'fau-image-storage'
 # Routes
 @app.route('/')
 def index():
+    # Form for uploading files
     index_html = """
     <form method="post" enctype="multipart/form-data" action="/upload">
       <div>
@@ -30,11 +31,11 @@ def index():
       </div>
     </form>
     """
-
-    # Get list of files and display as links
-    files = list_files()
+    
+    # Get list of files and display them as links
+    files = get_list_of_files(BUCKET_NAME)
     for file in files:
-        index_html += "<li><a href='/files/" + file + "'>" + file + "</a></li>"
+        index_html += f"<li><a href='/files/{file}'>{file}</a></li>"
 
     return index_html
 
@@ -63,7 +64,11 @@ def upload():
 def list_files():
     # List files in Google Cloud Storage bucket and return them as a list of file names
     files = get_list_of_files(BUCKET_NAME)
-    return "<ul>" + "".join([f"<li><a href='/files/{file}'>{file}</a></li>" for file in files]) + "</ul>"
+    file_links = "".join([f"<li><a href='/files/{file}'>{file}</a></li>" for file in files])
+    html_content = f"<ul>{file_links}</ul>"
+
+    # Return the content as HTML
+    return Response(html_content, content_type='text/html')
 
 
 @app.route('/files/<filename>')
@@ -117,5 +122,6 @@ def fetch_db_entry(query_filters):
 ### Main execution ###
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
+
 
 
