@@ -111,6 +111,6 @@ def fetch_db_entry(query_filters):
 
 ### Main execution ###
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=8080)
     
 
