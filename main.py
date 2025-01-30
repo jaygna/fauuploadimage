@@ -31,7 +31,9 @@ def index():
     </form>
     """
 
-    for file in list_files():
+    # Get list of files and display as links
+    files = list_files()
+    for file in files:
         index_html += "<li><a href='/files/" + file + "'>" + file + "</a></li>"
 
     return index_html
@@ -59,8 +61,9 @@ def upload():
 
 @app.route('/files')
 def list_files():
-    # List files in Google Cloud Storage bucket
-    return get_list_of_files(BUCKET_NAME)
+    # List files in Google Cloud Storage bucket and return them as a list of file names
+    files = get_list_of_files(BUCKET_NAME)
+    return "<ul>" + "".join([f"<li><a href='/files/{file}'>{file}</a></li>" for file in files]) + "</ul>"
 
 
 @app.route('/files/<filename>')
@@ -70,11 +73,12 @@ def get_file(filename):
 
 
 ### Google Cloud Storage functions ###
+
 def get_list_of_files(bucket_name):
-    """Lists all the blobs in the bucket."""
+    """Lists all the blobs in the bucket and returns a list of file names."""
     print(f"Fetching file list from bucket: {bucket_name}")
     blobs = storage_client.list_blobs(bucket_name)
-    return [blob.name for blob in blobs]
+    return [blob.name for blob in blobs]  # Just the file names
 
 
 def save_to_gcs(file_name, file):
@@ -93,6 +97,7 @@ def send_file_from_gcs(bucket_name, file_name):
 
 
 ### Google Cloud Datastore functions ###
+
 def add_db_entry(metadata):
     """Add metadata to Google Cloud Datastore."""
     entity = datastore.Entity(key=datastore_client.key('photos'))
@@ -112,5 +117,5 @@ def fetch_db_entry(query_filters):
 ### Main execution ###
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
-    
+
 
